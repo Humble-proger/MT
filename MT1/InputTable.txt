@@ -1,0 +1,12 @@
+float b;
+struct name;
+int h = b + 4;
+b = 17 - h;
+int b = 15;
+float 1opgfr;
+double reg;
+reg = 45 - 2;
+float open^h = 432;
+int b = 14;
+h += 45;
+name += 98;
