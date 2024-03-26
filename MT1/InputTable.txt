@@ -1,7 +1,16 @@
-float b;
-struct name;
-int h = b + 4;
-b = 17 - h;
+// commentarii /*  */
+/* Commentarii
+-123
+her /*
+ad //
+*/
+
+/* hello */ /* help */ /*  me  */
+
+float b; /* Cooment */
+struct name; // Good
+int h = b + 4; /*
+b = 17 - h; */
 int b = 15;
 float 1opgfr;
 double reg;
@@ -10,3 +19,7 @@ float open^h = 432;
 int b = 14;
 h += 45;
 name += 98;
+float kom = 98.34564;
+float jas = 45.32.321;
+
+

@@ -1,0 +1,5 @@
+b	float	0
+name	struct	0
+h	int	1
+kom	float	1
+jas	float	1

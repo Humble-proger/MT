@@ -1,0 +1,8 @@
+ERROR! Overwriting a Variable in line 13.
+ERROR! Invalid name of variable in line 14.
+ERROR! Unknown variable in line 15.
+ERROR! Unknown variable in line 16.
+ERROR! Invalid name of variable in line 17.
+ERROR! Overwriting a Variable in line 18.
+ERROR! Performing operations on an uninitialized variable in line 20.
+ERROR! The incorrect number of dots is used in writing a real number in line 22.

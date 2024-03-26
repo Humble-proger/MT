@@ -95,7 +95,6 @@ public:
         cerr << "Element with key '" << key << "' not found." << endl;
         return false;
     }
-
     lexeme getElement(const string& key) {
         int hash = calculateHash(key);
         while (hashTable.find(hash) != hashTable.end() && hashTable[hash].valid) {
@@ -108,8 +107,25 @@ public:
         return lexeme();
        
     }
-    
+    int getIndex(const string& key) {
+        int hash = calculateHash(key);
+        while (hashTable.find(hash) != hashTable.end() && (hashTable[hash].valid || hashTable.count(hash) == 0)) {
+            if (hashTable[hash] == key) {
+                return hash;
+            }
+            hash = rehash(hash);
+        }
+        return -1;
+    }
 
+    lexeme getElemIndex(int index) {
+        if (index >= 0 && index < TABLE_SIZE) {
+            return hashTable[index];
+        }
+        else {
+            return lexeme();
+        }
+    }
     void PrintTable() {
         cout << "Type" << '\t' << "Name" << '\t' << "Init" << endl;
         for (const pair<int, lexeme> val : hashTable) {
@@ -119,6 +135,16 @@ public:
     void clear() {
         hashTable.clear();
         SIZE_TABLE = 0;
+    }
+    bool outFile(ofstream& FileOut) {
+        if (!FileOut.is_open()) {
+            cerr << "Error! File not opened!" << endl;
+            return false;
+        }
+        for (auto& t_elem : hashTable) {
+            FileOut << t_elem.second.name << "\t" << t_elem.second.type << "\t" << t_elem.second.value << endl;
+        }
+        return true;
     }
 };
 #endif

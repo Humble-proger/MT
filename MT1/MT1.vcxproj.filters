@@ -32,7 +32,10 @@
     <ClInclude Include="VariableHashTable.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="HashTable.h">
+    <ClInclude Include="Translator.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Error.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,13 +2,14 @@
 #ifndef TABLE_CONST
 #include "Lexeme.h"
 
+template <typename T> 
 class ConstantTable {
 private:
-    map<string, int> Table;
+    map<T, int> Table;
 public:
     //Конструктор по умолчанию
     ConstantTable() {}
-    ConstantTable(const string& Namefile, const string& ScanFile) {
+    ConstantTable(const T& Namefile, const T& ScanFile) {
         ReadKeysFile(Namefile);
         ScanningFile(ScanFile);
     }
@@ -17,7 +18,12 @@ public:
         Table.clear();
     }
     //Добавить элемент
-    void Add(const string& NameofType) {
+
+    bool empty() {
+        return Table.empty();
+    }
+
+    void Add(const T& NameofType) {
         if (Contains(NameofType)) {
             Table[NameofType] += 1;
         }
@@ -26,11 +32,11 @@ public:
         }
     }
     //Содержит ли таблица элемент
-    bool Contains(const string& NameOfType) {
+    bool Contains(const T& NameOfType) {
         return Table.find(NameOfType) != Table.end();
     }
     //Получить количество вхождений данного элемента
-    int Count(const string& NameOfType) {
+    int Count(const T& NameOfType) {
         if (Contains(NameOfType))
             return Table[NameOfType];
         else 
@@ -40,7 +46,7 @@ public:
     bool ReadKeysFile(const string& name) {
         ifstream ReadedFile(name, ios::in);
         if (!ReadedFile.is_open()) return false;
-        string Types;
+        T Types;
         while (!ReadedFile.eof()) {
             ReadedFile >> Types;
             Table[Types] = 0;
@@ -48,36 +54,7 @@ public:
         ReadedFile.close();
         return true;
     }
-    void ScanningLine(const string& line) {
-        stringstream ss(line);
-        string elem;
-        while (!ss.eof()) {
-            ss >> elem;
-            if (elem[elem.size() - 1] == ';') {
-                elem.replace(elem.size() - 1, 1, "");
-            }
-            if (Contains(elem)) {
-                Table[elem] += 1;
-            }
-        }
-    }
     
-    bool ScanningFile(const string& Name) {
-        ifstream ScanFile(Name, ios::in);
-        if (!ScanFile.is_open()) return false;
-        string elem;
-        while (!ScanFile.eof()) {
-            ScanFile >> elem;
-            if (elem[elem.size() - 1] == ';') {
-                elem.replace(elem.size()-1, 1, "");
-            }
-            if (Contains(elem)) {
-                Table[elem] += 1;
-            }
-        }
-        ScanFile.close();
-        return true;
-    }
     void PrintTable() {
         cout << "Element" << '\t' << "Count" << endl;
         for (const pair<const string&, int> val : Table) {
@@ -86,6 +63,29 @@ public:
     }
     void clear() {
         Table.clear();
+    }
+
+    int getIndex(T elem) {
+        int num = 0;
+        for (auto& t_elem : Table) {
+            if (t_elem.first == elem) return num;
+            else num++;
+        }
+        return -1;
+    }
+    pair<T, int> getElembyIndex(int index) {
+        auto it = next(Table.begin(), index);
+        return { it->first, it->second };
+    }
+    bool outfile(ofstream& FileOut) {
+        if (!FileOut.is_open()) {
+            cerr << "Error! File not opened!";
+            return false;
+        }
+        for (auto& t_elem : Table) {
+            FileOut << t_elem.first << "\t" << t_elem.second << endl;
+        }
+        return true;
     }
 };
 
