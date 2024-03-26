@@ -1,0 +1,3 @@
+ERROR! Using a reserved keyword to indicate a variable name in line 0.
+ERROR! Invalid name of variable in line 1.
+ERROR! Invalid name of variable in line 2.

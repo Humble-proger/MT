@@ -1,0 +1,5 @@
+int gl = 43t;
+float csa = 12.98;
+float dim = .1;
+int f = 09;
+float d = 12.2.4;

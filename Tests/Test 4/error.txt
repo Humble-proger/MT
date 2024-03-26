@@ -1,0 +1,2 @@
+ERROR! Unknown name in line 0.
+ERROR! Performing operations on an uninitialized variable in line 2.

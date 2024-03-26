@@ -3,11 +3,11 @@
 #include "VariableHashTable.h"
 #include "Token.h"
 #include "Error.h"
-#define KEYWORDFILENAME "Types.txt"
-#define SEPARATORFILENAME "Separator.txt"
-#define NUMFILENAME "Numbers.txt"
-#define OPERATIONFILENAME "Operation.txt"
-#define LETTERSFILENAME "Letters.txt"
+#define KEYWORDFILENAME "input_files/Types.txt"
+#define SEPARATORFILENAME "input_files/Separator.txt"
+#define NUMFILENAME "input_files/Numbers.txt"
+#define OPERATIONFILENAME "input_files/Operation.txt"
+#define LETTERSFILENAME "input_files/Letters.txt"
 
 
 #ifndef TRANSLATOR
@@ -221,7 +221,7 @@ private:
 					buffer.push(ch);
 					continue;
 				case 3:
-					return ERR_INVALID_OPERATION;
+					return ERR_INVALID_SYMBOL;
 				default:
 					break;
 				}
@@ -361,6 +361,7 @@ public:
 			num_line++;
 		}
 		ScanFile.close();
+		if (check || nextcheck) QErrors.push(Errors(num_line, ERR_BLOCKCOMMENT));
 	}
 
 	bool outFileToken(ofstream& FileOut) {

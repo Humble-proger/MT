@@ -1,0 +1,4 @@
+ERROR! The number is used incorrectly in line 0.
+ERROR! Invalid symbol in line 2.
+ERROR! The number is used incorrectly in line 3.
+ERROR! The incorrect number of dots is used in writing a real number in line 4.

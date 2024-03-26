@@ -16,6 +16,7 @@
 #define ERROR13 "ERROR! Performing operations on an uninitialized variable in line "
 #define ERROR14 "ERROR! Overwriting a Variable in line "
 #define ERROR15 "ERROR! Using a reserved keyword to indicate a variable name in line "
+#define ERROR16 "ERROR! Invalid symbol in line "
 
 #ifndef ERROR
 
@@ -35,7 +36,8 @@ enum Code_Errors {
 	ERR_INVALID_ASSIGNMENT_OPERATION,
 	ERR_PERFORMING_OPERATION_UNINITIALIZED_VAR,
 	ERR_VAR_OVERRIDES,
-	ERR_KEYWORD_IN_VAR_NAME
+	ERR_KEYWORD_IN_VAR_NAME,
+	ERR_INVALID_SYMBOL
 };
 
 class Errors {
@@ -83,6 +85,8 @@ public:
 			return ERROR14 + to_string(NUM_LINE) + ".";
 		case ERR_KEYWORD_IN_VAR_NAME:
 			return ERROR15 + to_string(NUM_LINE) + ".";
+		case ERR_INVALID_SYMBOL:
+			return ERROR16 + to_string(NUM_LINE) + ".";
 		default:
 			break;
 		}

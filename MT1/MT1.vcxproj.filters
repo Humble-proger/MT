@@ -40,7 +40,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="InputTable.txt">
+    <Text Include="source.txt">
       <Filter>Файлы ресурсов</Filter>
     </Text>
   </ItemGroup>

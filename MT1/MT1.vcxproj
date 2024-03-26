@@ -138,7 +138,7 @@
     <ClInclude Include="VariableHashTable.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="InputTable.txt" />
+    <Text Include="source.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

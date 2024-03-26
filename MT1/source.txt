@@ -1,0 +1,6 @@
+/* Hello */  /* my name */
+/*
+ //
+ //
+*/
+/* global */ int global = 2;

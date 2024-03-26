@@ -1,0 +1,8 @@
+/*
+(-(-_(-_-)_-)-)
+*/
+
+int help = 184; // Код помощи
+float angle_alpha = help & 10;
+struct Name;
+// Конец кода /*

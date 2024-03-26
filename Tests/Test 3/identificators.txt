@@ -1,0 +1,5 @@
+gl	int	1
+csa	float	1
+dim	float	1
+f	int	1
+d	float	1

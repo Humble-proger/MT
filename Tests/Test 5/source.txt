@@ -1,0 +1,3 @@
+double glow = 0.4;
+size_t elem = 3;
+int t = 34 % 2;

@@ -1,15 +1,15 @@
 ﻿#include "Translator.h"
-#define NAMEFILEERRORS "error.txt"
-#define NAMEFILETOKEN "token.txt"
-#define NAMEFILEIDENTIFICATORS "identificators.txt"
-#define NAMEFILECONSTANS "constans.txt"
-#define NAMEFILECONSTTABLE "consttables.txt"
+#define NAMEFILEERRORS "out_files/error.txt"
+#define NAMEFILETOKEN "out_files/token.txt"
+#define NAMEFILEIDENTIFICATORS "out_files/identificators.txt"
+#define NAMEFILECONSTANS "out_files/constans.txt"
+#define NAMEFILECONSTTABLE "out_files/consttables.txt"
 
 
 int main() {
 	setlocale(LC_ALL, "Russian");
 	Translator _TL;
-	_TL.ScanningFile("InputTable.txt");
+	_TL.ScanningFile("source.txt");
 	ofstream FileToken(NAMEFILETOKEN);
 	if (!_TL.outFileToken(FileToken)) {
 		cerr << NAMEFILETOKEN << " file not opened!";

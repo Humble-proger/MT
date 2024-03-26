@@ -1,3 +1,0 @@
-4	const	0
-45	const	0
-98.34564	const	0
