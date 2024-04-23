@@ -35,7 +35,7 @@ public:
         }
         return false;
     }
-    bool Add(const string& key, const string& Type, bool Value=false) {
+    bool Add(const string& key, const string& Type="", bool Value = false) {
         if (SIZE_TABLE >= TABLE_SIZE) {
             cerr << "Table is full";
             return false;

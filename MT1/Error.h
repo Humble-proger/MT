@@ -10,7 +10,7 @@
 #define ERROR7 "ERROR! Invalid name of variable in line "
 #define ERROR8 "ERROR! Failed to add to table in line "
 #define ERROR9 "ERROR! Invalid type of variable in line "
-#define ERROR10 "ERROR! Unknown name in line "
+#define ERROR10 "Syntax Error! Unknown name "
 #define ERROR11 "ERROR! Incorrect use of operation in line "
 #define ERROR12 "ERROR! Incorrect variable assignment in line "
 #define ERROR13 "ERROR! Performing operations on an uninitialized variable in line "
@@ -37,20 +37,40 @@ enum Code_Errors {
 	ERR_PERFORMING_OPERATION_UNINITIALIZED_VAR,
 	ERR_VAR_OVERRIDES,
 	ERR_KEYWORD_IN_VAR_NAME,
-	ERR_INVALID_SYMBOL
+	ERR_INVALID_SYMBOL,
+	ERR_PARSESTACK,
+	ERR_UNKNOWN_TERMINAL,
+	ERR_PARSESTACK_NO_EMPTY,
+	ERR_BRACKET
 };
 
 class Errors {
 
 public:
 	int NUM_LINE = 0;
+	vector<string> terminal;
+	stack<int> tokens;
+	string _err_terminal;
 	Code_Errors CODE = NO_ERROR;
 	Errors() {}
 	Errors(int num_line, Code_Errors error) {
 		NUM_LINE = num_line;
 		CODE = error;
 	}
+	Errors(Code_Errors error, vector<string> terminal_, string err_terminal) {
+		CODE = error;
+		terminal = terminal_;
+		_err_terminal = err_terminal;
+	}
+	Errors(Code_Errors error) {
+		CODE = error;
+	}
+	Errors(Code_Errors error, stack<int> token_) {
+		CODE = error;
+		tokens = token_;
+	}
 	inline string info() {
+		stringstream ss;
 		switch (CODE)
 		{
 		case NO_ERROR:
@@ -74,7 +94,7 @@ public:
 		case ERR_INVALID_TYPE_VAR:
 			return ERROR9 + to_string(NUM_LINE) + ".";
 		case ERR_UNKNOWN_VARIABLE:
-			return ERROR10 + to_string(NUM_LINE) + ".";
+			return ERROR10 + _err_terminal + ".";
 		case ERR_INCORRECT_USE_OPERATION:
 			return ERROR11 + to_string(NUM_LINE) + ".";
 		case ERR_INVALID_ASSIGNMENT_OPERATION:
@@ -87,6 +107,19 @@ public:
 			return ERROR15 + to_string(NUM_LINE) + ".";
 		case ERR_INVALID_SYMBOL:
 			return ERROR16 + to_string(NUM_LINE) + ".";
+		case ERR_BRACKET:
+			return "Syntax Error: Brackets balance error!";
+		case ERR_PARSESTACK:
+			return "Error: Parse stack is empty!";
+		case ERR_UNKNOWN_TERMINAL:
+			for (auto temp : terminal) ss << temp + " ";
+			return "Syntax Error: Using an unknown terminal " + string("\"") + _err_terminal + string("\"") + "\nMust be one of these: " + ss.str();
+		case ERR_PARSESTACK_NO_EMPTY:
+			while (!tokens.empty()) {
+				ss << to_string(tokens.top()) + " ";
+				tokens.pop();
+			}
+			return "Error: Parse stack is not empty!" + string("\nElements of the parser stack: ") + ss.str();
 		default:
 			break;
 		}

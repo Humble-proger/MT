@@ -1,0 +1,115 @@
+Terminals	Jump	Accept	Stack	Return	Error
+void int float struct	2	0	0	0	1
+void int float	6	0	0	0	0
+struct	14	0	0	0	0
+eps	5	0	0	0	1
+eps	-1	0	0	1	1
+void int float	22	0	1	0	1
+main	8	1	0	0	1
+(	9	1	0	0	1
+int float struct )	28	0	1	0	1
+)	11	1	0	0	1
+{	12	1	0	0	1
+var int float struct }	45	0	1	0	1
+}	-1	1	0	1	1
+struct	15	1	0	0	1
+var main	16	0	0	0	1
+main	7	0	0	0	0
+var	18	0	0	0	1
+var	19	1	0	0	1
+{	20	1	0	0	1
+var int float struct }	45	0	1	0	1
+}	-1	1	0	1	1
+void	25	0	0	0	0
+float	26	0	0	0	0
+int	27	0	0	0	1
+void	-1	1	0	1	1
+float	-1	1	0	1	1
+int	-1	1	0	1	1
+float int struct	31	0	0	0	0
+)	30	0	0	0	1
+)	-1	0	0	1	1
+float int struct	34	0	1	0	1
+var	33	1	0	0	1
+, )	40	0	0	0	1
+int	37	0	0	0	0
+float	38	0	0	0	0
+struct	39	0	0	0	1
+int	-1	1	0	1	1
+float	-1	1	0	1	1
+struct	-1	1	0	1	1
+,	43	0	0	0	0
+)	42	0	0	0	1
+)	-1	1	0	1	1
+,	44	1	0	0	1
+int float struct )	28	0	0	0	1
+int float struct	49	0	0	0	0
+var	51	0	0	0	0
+}	48	0	0	0	1
+}	-1	0	0	1	1
+int float struct	53	0	1	0	1
+var int float struct }	45	0	0	0	1
+var	96	0	1	0	1
+var int float struct }	45	0	0	0	1
+int float struct	34	0	1	0	1
+var	55	0	0	0	1
+var	56	1	0	0	1
+= ;	58	0	1	0	1
+, ;	60	0	0	0	1
+=	114	0	0	0	0
+;	63	0	0	0	1
+,	65	0	0	0	0
+;	64	0	0	0	1
+const var - (	67	0	0	0	1
+;	-1	0	0	1	1
+;	-1	1	0	1	1
+,	66	1	0	0	1
+var	54	0	0	0	1
+const var (	69	0	0	0	0
+-	70	0	0	0	1
+const var (	72	0	0	0	1
+-	71	1	0	0	1
+const var (	72	0	0	0	1
+const var (	73	0	0	0	1
+const var (	75	0	1	0	1
++ - > < >> << | & ;	83	0	0	0	1
+const	78	0	0	0	0
+var	79	0	0	0	0
+(	80	0	0	0	1
+const	-1	1	0	1	1
+var	-1	1	0	1	1
+(	81	1	0	0	1
+const var - (	67	0	1	0	1
+)	-1	1	0	1	1
++ - > < >> << | &	86	0	0	0	0
+;	85	0	0	0	1
+; ,	-1	0	0	1	1
++ - > < >> << | &	88	0	1	0	1
+const var - (	67	0	0	0	1
++	106	0	0	0	0
+-	107	0	0	0	0
+>	108	0	0	0	0
+<	109	0	0	0	0
+>>	110	0	0	0	0
+<<	111	0	0	0	0
+|	112	0	0	0	0
+&	113	0	0	0	1
+var	97	1	0	0	1
+= += -=	100	0	1	0	1
+const var - (	67	0	1	0	1
+;	-1	1	0	1	1
+=	103	0	0	0	0
++=	104	0	0	0	0
+-=	105	0	0	0	1
+=	-1	1	0	1	1
++=	-1	1	0	1	1
+-=	-1	1	0	1	1
++	-1	1	0	1	1
+-	-1	1	0	1	1
+>	-1	1	0	1	1
+<	-1	1	0	1	1
+>>	-1	1	0	1	1
+<<	-1	1	0	1	1
+|	-1	1	0	1	1
+&	-1	1	0	1	1
+=	62	1	0	0	1

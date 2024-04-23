@@ -1,6 +1,3 @@
-/* Hello */  /* my name */
-/*
- //
- //
-*/
-/* global */ int global = 2;
+void main() {
+int temp = ( 15 + 32 + 23 ) );
+}

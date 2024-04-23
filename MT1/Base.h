@@ -8,6 +8,7 @@
 #include <sstream>
 #include <regex>
 #include <queue>
+#include <stack>
 
 
 using namespace std;
