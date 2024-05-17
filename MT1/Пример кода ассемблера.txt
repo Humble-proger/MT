@@ -37,9 +37,10 @@ point ends
 
     FILD constname4;
     MOV TEMP_VAR, 32
-    FLD TEMP_VAR;
+    FILD TEMP_VAR;
     FSUB;
     FSTP val;
+
     CALL ExitProcess@4 ;
     END START;
 ;

@@ -17,6 +17,14 @@
 #define NAMEFILEPOSTFIX "out_files/postfix.txt"
 #define NAMEASSEMBLERCODE "out_files/asm_code.asm"
 
+#define OPERATION 0
+#define NUMBERS 1
+#define KEYWORD 2
+#define SEPARATORS 3
+#define LETTERS 4
+#define IDENTIFICATORS 5
+#define CONSTANS 6
+
 #ifndef TRANSLATOR
 
 class Translator {
@@ -403,7 +411,7 @@ private:
 				if (parser_table[row].stack_)
 					parser_stack.push(row + 1);
 				if (parser_table[row].accept) {
-					if ((name_token == "var" || name_token == "const") && get_token_info(sec_token) == "=")
+					if ((name_token == "var" || name_token == "const") && (get_token_info(sec_token) == "=" || row == 54))
 						postfix = true;
 					if (!have_type && name_token == "var" && identificators.getElemIndex(fir_token.INDEX).type == "") {
 						return Errors(ERR_UNKNOWN_VARIABLE, parser_table[row].terminal, get_token_info(fir_token));
@@ -596,12 +604,16 @@ private:
 		if (!AsmFile.is_open())
 			return Errors(FATALERR_FAILLEDREADFILE);
 		AsmFile << ".386" << endl << ".MODEL FLAT, STDCALL" << endl << "EXTRN ExitProcess@4:NEAR" << endl;
+		vector<Token> temp_postfix_buffer = postfix_buffer;
 		bool mark_continue = false;
 		bool mark_is_structure = false;
-		string token_text;
+		string token_text_1, token_text_2, token_text_3, name_structure;
+		int start_structure = 0;
+		Token tok1, tok2, tok3;
+		lexeme temp_lex;
 		for (int ind = 0; ind < postfix_buffer.size(); ind++) {
-			token_text = get_token_info(postfix_buffer[ind]);
-			if (token_text == "}") {
+			token_text_1 = get_token_info(postfix_buffer[ind]);
+			if (token_text_1 == "}") {
 				mark_continue = false;
 				mark_is_structure = false;
 				continue;
@@ -609,12 +621,64 @@ private:
 			if (mark_continue)
 				continue;
 			if (!mark_is_structure) {
-				if (token_text != "main") {
+				if (token_text_1 != "main") {
 					mark_is_structure = true;
+					name_structure = token_text_1;
+					start_structure = ind;
 					ind++;
 				}
 				else
 					mark_continue = true;
+			}
+			else {
+				AsmFile << name_structure << "struct" << endl;
+				tok1 = postfix_buffer[ind];
+				while (get_token_info(tok1) != "}") {
+					tok2 = postfix_buffer[ind + 1]; tok3 = postfix_buffer[ind + 2];
+					
+					token_text_1 = get_token_info(tok1); token_text_2 = get_token_info(tok2);
+					if (token_text_2 == ";") {
+						if (tok1.NUM_TABLE == IDENTIFICATORS) {
+							temp_lex = identificators.getElement(token_text_1);
+							if (temp_lex.type == "int") {
+								AsmFile << token_text_1 << " dd ?" << endl;
+							}
+							else if (temp_lex.type == "float") {
+								AsmFile << token_text_1 << " real4 ?" << endl;
+							}
+							else {
+								return Errors(ERR_TYPE_STRUCT);
+							}
+							ind = ind + 2;
+							continue;
+						}
+						else {
+							return Errors(ERR_INVALID_PREFIX);
+						}
+					}
+					token_text_3 = get_token_info(tok3);
+					if (token_text_3 == "=") {
+						if (tok1.NUM_TABLE == IDENTIFICATORS) {
+							temp_lex = identificators.getElement(token_text_1);
+							if (temp_lex.type == "int") {
+								if (tok2.NUM_TABLE == CONSTANS)
+							}
+							else if (temp_lex.type == "float") {
+								
+							}
+							else {
+								return Errors(ERR_TYPE_STRUCT);
+							}
+						}
+						else {
+							return Errors(ERR_INVALID_PREFIX);
+						}
+					}
+					else {
+						return Errors(ERR_MULTIPLY_EXPR);
+					}
+
+				} 
 			}
 		}
 	}

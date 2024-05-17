@@ -41,7 +41,10 @@ enum Code_Errors {
 	ERR_PARSESTACK,
 	ERR_UNKNOWN_TERMINAL,
 	ERR_PARSESTACK_NO_EMPTY,
-	ERR_BRACKET
+	ERR_BRACKET,
+	ERR_INVALID_PREFIX,
+	ERR_TYPE_STRUCT,
+	ERR_MULTIPLY_EXPR
 };
 
 class Errors {
@@ -120,6 +123,12 @@ public:
 				tokens.pop();
 			}
 			return "Error: Parse stack is not empty!" + string("\nElements of the parser stack: ") + ss.str();
+		case ERR_INVALID_PREFIX:
+			return "Error: The prefix array is not built correctly!";
+		case ERR_TYPE_STRUCT:
+			return "Error: In this version of the program there is no processing of the structure type in this constructor!";
+		case ERR_MULTIPLY_EXPR:
+			return "Error: In this version of the program, expressions cannot be used in the structure constructor when declaring variables;";
 		default:
 			break;
 		}
