@@ -15,6 +15,7 @@
 #define NAMEFILECONSTANS "out_files/constans.txt"
 #define NAMEFILECONSTTABLE "out_files/consttables.txt"
 #define NAMEFILEPOSTFIX "out_files/postfix.txt"
+#define NAMEASSEMBLERCODE "out_files/asm_code.asm"
 
 #ifndef TRANSLATOR
 
@@ -41,7 +42,7 @@ private:
 		bool err = false;
 	};
 	vector<table_parser_elem> parser_table;
-	vector<string> postfix_buffer;
+	vector<Token> postfix_buffer;
 
 	void ltrim(string& str) {
 		str.erase(0, str.find_first_not_of("\t\n\v\f\r "));
@@ -374,7 +375,6 @@ private:
 	Errors SentenceAnalysis() {
 		Token fir_token, sec_token;
 		stack<int> parser_stack;
-		parser_stack.push(0);
 		int row = 0;
 		string type;
 		vector<Token> infix_expr;
@@ -388,6 +388,8 @@ private:
 		bool end_flag = CQToken.empty();
 		sec_token = CQToken.front(); CQToken.pop();
 		while (!flag_err) {
+			if (row == 0)
+				parser_stack.push(0);
 			name_token = get_token_info(fir_token);
 			if (fir_token.NUM_TABLE == 5 && name_token != "main") name_token = "var";
 			if (fir_token.NUM_TABLE == 6) name_token = "const";
@@ -422,6 +424,12 @@ private:
 					}
 					if (name_token == "var" && have_type && (row == 54 || row == 31 || row == 18))
 						identificators.SetType(get_token_info(fir_token), type);
+					if (name_token == "var" && row == 17)
+						postfix_buffer.push_back(fir_token);
+					if (name_token == "main" && row == 6)
+						postfix_buffer.push_back(fir_token);
+					if ((name_token == "{" || name_token == "}") && (row == 10 || row == 12 || row == 18 || row == 20))
+						postfix_buffer.push_back(fir_token);
 					end_flag = CQToken.empty();
 					fir_token = sec_token;
 					if (!end_flag) {
@@ -454,10 +462,13 @@ private:
 		if (!flag_err && parser_stack.size() > 1) {
 			return Errors(ERR_PARSESTACK_NO_EMPTY, parser_stack);
 		}
+		if (!flag_err && name_token == "}") {
+			postfix_buffer.push_back(fir_token);
+		}
 		return Errors(NO_ERROR);
 	}
 	bool make_postfix(vector<Token> v) {
-		stack<string> stack_temp;
+		stack<Token> stack_temp;
 		bool error_flag = false;
 		int index = 0;
 		while (index < v.size() && !error_flag) {
@@ -465,16 +476,16 @@ private:
 			for (i = index; i < v.size() && !error_flag && get_token_info(v[i]) != ";" && get_token_info(v[i]) != ","; i++) {
 				string token_text = get_token_info(v[i]);
 				if (v[i].NUM_TABLE == 5 || v[i].NUM_TABLE == 6) {
-					postfix_buffer.push_back(token_text);
+					postfix_buffer.push_back(v[i]);
 				}
 				else if (token_text == "(") {
-					stack_temp.push(token_text);
+					stack_temp.push(v[i]);
 				}
 				else if (token_text == ")")
 				{
-					while (!stack_temp.empty() && stack_temp.top() != "(")
+					while (!stack_temp.empty() && get_token_info(stack_temp.top()) != "(")
 					{
-						string tmpstr = stack_temp.top();
+						Token tmpstr = stack_temp.top();
 						postfix_buffer.push_back(tmpstr);
 						stack_temp.pop();
 					}
@@ -491,13 +502,13 @@ private:
 				}
 				else if (v[i].NUM_TABLE == 0)
 				{
-					while (!stack_temp.empty() && priority_le(token_text, stack_temp.top()))
+					while (!stack_temp.empty() && priority_le(token_text, get_token_info(stack_temp.top())))
 					{
-						string tmpstr = stack_temp.top();
+						Token tmpstr = stack_temp.top();
 						postfix_buffer.push_back(tmpstr);
 						stack_temp.pop();
 					}
-					stack_temp.push(token_text);
+					stack_temp.push(v[i]);
 				}
 			}
 			if (error_flag)
@@ -508,9 +519,9 @@ private:
 			else
 			{
 				while (!stack_temp.empty() &&
-					stack_temp.top() != "(" && stack_temp.top() != ")")
+					get_token_info(stack_temp.top()) != "(" && get_token_info(stack_temp.top()) != ")")
 				{
-					string tmpstr = stack_temp.top();
+					Token tmpstr = stack_temp.top();
 					postfix_buffer.push_back(tmpstr);
 					stack_temp.pop();
 				}
@@ -527,7 +538,7 @@ private:
 				return false;
 			}
 			index = i + 1;
-			postfix_buffer.push_back(";");
+			postfix_buffer.push_back(Token(3, separators.getIndex(';')));
 		}
 		return true;
 	}
@@ -538,7 +549,7 @@ private:
 		ofstream out(file_tree);
 		for (int i = 0; i < postfix_buffer.size(); i++)
 		{
-			out << postfix_buffer[i] << " ";
+			out << get_token_info(postfix_buffer[i]) << " ";
 		}
 		out.close();
 	}
@@ -562,6 +573,51 @@ private:
 		if (pw <= pww) return true;
 		return false;
 	};
+
+	Errors GenerateCodeAssembler() {
+		/*
+		.386
+		.MODEL FLAT, STDCALL
+		OPTION CASEMAP: NONE
+		EXTRN ExitProcess@4:NEAR
+		<structs>
+		.DATA
+		TEMP_VAR dd ?
+		<data>
+		.CONST
+		<constants>
+		.CODE
+			START:
+			<code>
+			CALL ExitProcess@4
+			END START
+		*/
+		ofstream AsmFile(NAMEASSEMBLERCODE);
+		if (!AsmFile.is_open())
+			return Errors(FATALERR_FAILLEDREADFILE);
+		AsmFile << ".386" << endl << ".MODEL FLAT, STDCALL" << endl << "EXTRN ExitProcess@4:NEAR" << endl;
+		bool mark_continue = false;
+		bool mark_is_structure = false;
+		string token_text;
+		for (int ind = 0; ind < postfix_buffer.size(); ind++) {
+			token_text = get_token_info(postfix_buffer[ind]);
+			if (token_text == "}") {
+				mark_continue = false;
+				mark_is_structure = false;
+				continue;
+			}
+			if (mark_continue)
+				continue;
+			if (!mark_is_structure) {
+				if (token_text != "main") {
+					mark_is_structure = true;
+					ind++;
+				}
+				else
+					mark_continue = true;
+			}
+		}
+	}
 
 public:
 	Translator() {

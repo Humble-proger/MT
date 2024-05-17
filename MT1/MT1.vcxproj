@@ -134,6 +134,7 @@
     <ClInclude Include="ConstTable.h" />
     <ClInclude Include="Error.h" />
     <ClInclude Include="Lexeme.h" />
+    <ClInclude Include="Token.h" />
     <ClInclude Include="Translator.h" />
     <ClInclude Include="VariableHashTable.h" />
   </ItemGroup>

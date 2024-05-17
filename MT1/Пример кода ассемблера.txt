@@ -1,0 +1,45 @@
+.386
+.MODEL FLAT, STDCALL
+OPTION CASEMAP: NONE
+
+EXTRN ExitProcess@4:NEAR
+;
+point struct
+    x dd 18
+    y dd 3
+point ends
+
+
+.DATA
+    TEMP_VAR dd ?
+    age DD ?;
+    val real4 ?;
+;
+.CONST
+    constname1 dd 100
+    constname2 dd 32
+    constname3 dd 50
+    constname4 real4 98.23;
+    constname5 dd 1
+.CODE ;
+    START: ;
+    fild constname1
+    fild constname2
+    fcomip st(0), st(1)
+    ja greater
+    jb less
+    greater:
+        mov TEMP_VAR, 1
+        jmp mark_block_end
+    less:
+        mov TEMP_VAR, 0
+    mark_block_end:
+
+    FILD constname4;
+    MOV TEMP_VAR, 32
+    FLD TEMP_VAR;
+    FSUB;
+    FSTP val;
+    CALL ExitProcess@4 ;
+    END START;
+;
