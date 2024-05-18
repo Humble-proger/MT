@@ -1,16 +1,4 @@
-struct People {
-float strench;
-int age = 100 - 32 - 50;
-float val = 98.23 - 32 >> 43;
-}
-// Hello
-void main()
-{
-float a;
-int b = 56 + 42;
-a = b - 432;
-}
-struct People {
-int age = 100 - 32 - 50;
-float val = 98.23 - 32 >> 43;
+void main () {
+struct lambda;
+lambda = 2 + 3;
 }

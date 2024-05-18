@@ -20,6 +20,9 @@ public:
 		NUM_TABLE = num_table;
 		INDEX = index;
 	}
+	bool operator == (const Token& b) {
+		return NUM_TABLE == b.NUM_TABLE && INDEX == b.INDEX;
+	}
 };
 
 

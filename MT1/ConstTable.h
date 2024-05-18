@@ -87,6 +87,24 @@ public:
         }
         return true;
     }
+    vector<int> values() {
+        vector<int> result(Table.size());
+        int i = 0;
+        for (auto& pair : Table) {
+            result[i] = Table.second;
+            i++;
+        }
+        return result;
+    }
+    vector<T> keys() {
+        vector<T> result(Table.size());
+        int i = 0;
+        for (auto& pair : Table) {
+            result[i] = Table.first;
+            i++;
+        }
+        return result;
+    }
 };
 
 #endif

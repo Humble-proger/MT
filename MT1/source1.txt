@@ -1,0 +1,17 @@
+struct People {
+float strench;
+int age = 100;
+float val = 98.23;
+}
+// Hello
+void main()
+{
+float a;
+int b = 56 + 42;
+a = b - 432;
+}
+struct Point {
+float x;
+float y;
+float z;
+}

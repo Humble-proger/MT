@@ -114,10 +114,13 @@ private:
 		return;
 	}
 
-	bool is_number(const std::string& s)
+	bool is_number(const string& s)
 	{
 		if (s == "-") return false;
 		return !s.empty() && (s.find_first_not_of("-0123456789") == s.npos);
+	}
+	bool is_float(const string& num) {
+		return num.find(".") != string::npos;
 	}
 	
 	bool fill_parser_table() {
@@ -411,8 +414,11 @@ private:
 				if (parser_table[row].stack_)
 					parser_stack.push(row + 1);
 				if (parser_table[row].accept) {
-					if ((name_token == "var" || name_token == "const") && (get_token_info(sec_token) == "=" || row == 54))
+					if (name_token == "var" && (get_token_info(sec_token) == "=" || row == 54)) {
 						postfix = true;
+						if (get_token_info(sec_token) == "=")
+							identificators.SetValue(get_token_info(fir_token), true);
+					}
 					if (!have_type && name_token == "var" && identificators.getElemIndex(fir_token.INDEX).type == "") {
 						return Errors(ERR_UNKNOWN_VARIABLE, parser_table[row].terminal, get_token_info(fir_token));
 					}
@@ -603,15 +609,17 @@ private:
 		ofstream AsmFile(NAMEASSEMBLERCODE);
 		if (!AsmFile.is_open())
 			return Errors(FATALERR_FAILLEDREADFILE);
-		AsmFile << ".386" << endl << ".MODEL FLAT, STDCALL" << endl << "EXTRN ExitProcess@4:NEAR" << endl;
+		AsmFile << ".386" << endl << ".MODEL FLAT, STDCALL" << endl << "OPTION CASEMAP: NONE" << endl << endl << "EXTRN ExitProcess@4:NEAR" << endl << endl;
 		vector<Token> temp_postfix_buffer = postfix_buffer;
 		bool mark_continue = false;
 		bool mark_is_structure = false;
 		string token_text_1, token_text_2, token_text_3, name_structure;
-		int start_structure = 0;
+		int start_structure = 0, ind, start_new_struct;
+		size_t temp;
 		Token tok1, tok2, tok3;
 		lexeme temp_lex;
-		for (int ind = 0; ind < postfix_buffer.size(); ind++) {
+		Errors temp_err;
+		for (ind = 0; ind < postfix_buffer.size(); ind++) {
 			token_text_1 = get_token_info(postfix_buffer[ind]);
 			if (token_text_1 == "}") {
 				mark_continue = false;
@@ -631,28 +639,35 @@ private:
 					mark_continue = true;
 			}
 			else {
-				AsmFile << name_structure << "struct" << endl;
+				AsmFile << name_structure << " struct" << endl;
 				tok1 = postfix_buffer[ind];
-				while (get_token_info(tok1) != "}") {
+				token_text_1 = get_token_info(tok1);
+				while (token_text_1 != "}" && (ind + 2) < postfix_buffer.size()) {
 					tok2 = postfix_buffer[ind + 1]; tok3 = postfix_buffer[ind + 2];
-					
-					token_text_1 = get_token_info(tok1); token_text_2 = get_token_info(tok2);
+
+					token_text_2 = get_token_info(tok2);
 					if (token_text_2 == ";") {
 						if (tok1.NUM_TABLE == IDENTIFICATORS) {
 							temp_lex = identificators.getElement(token_text_1);
 							if (temp_lex.type == "int") {
-								AsmFile << token_text_1 << " dd ?" << endl;
+								AsmFile << "\t" << token_text_1 << " dd ?" << endl;
+								identificators.SetStruct(token_text_1, true);
 							}
 							else if (temp_lex.type == "float") {
-								AsmFile << token_text_1 << " real4 ?" << endl;
+								AsmFile << "\t" << token_text_1 << " real4 ?" << endl;
+								identificators.SetStruct(token_text_1, true);
 							}
 							else {
+								AsmFile.close();
 								return Errors(ERR_TYPE_STRUCT);
 							}
 							ind = ind + 2;
+							tok1 = postfix_buffer[ind];
+							token_text_1 = get_token_info(tok1);
 							continue;
 						}
 						else {
+							AsmFile.close();
 							return Errors(ERR_INVALID_PREFIX);
 						}
 					}
@@ -661,26 +676,336 @@ private:
 						if (tok1.NUM_TABLE == IDENTIFICATORS) {
 							temp_lex = identificators.getElement(token_text_1);
 							if (temp_lex.type == "int") {
-								if (tok2.NUM_TABLE == CONSTANS)
+								if (tok2.NUM_TABLE == CONSTANS) {
+									if ((temp = token_text_2.find(';')) == string::npos) {
+										AsmFile << "\t" << token_text_1 << " dd " << token_text_2 << endl;
+										identificators.SetStruct(token_text_1, true);
+									}
+									else {
+										QErrors.push(Errors(WARNING_FLOAT_TO_INT));
+										token_text_2.erase(token_text_2.begin() + temp, token_text_2.end());
+										AsmFile << "\t" << token_text_1 << " dd " << token_text_2 << endl;
+										identificators.SetStruct(token_text_1, true);
+									}
+								}
+								else
+								{
+									AsmFile.close(); return Errors(ERR_STRUCT_NO_EXPR);
+								}
 							}
 							else if (temp_lex.type == "float") {
-								
+								if (tok2.NUM_TABLE == CONSTANS) {
+									AsmFile << "\t" << token_text_1 << " real4 " << token_text_2 << endl;
+									identificators.SetStruct(token_text_1, true);
+								}
+								else
+								{
+									AsmFile.close(); return Errors(ERR_STRUCT_NO_EXPR);
+								}
 							}
 							else {
+								AsmFile.close();
 								return Errors(ERR_TYPE_STRUCT);
 							}
 						}
 						else {
+							AsmFile.close();
 							return Errors(ERR_INVALID_PREFIX);
 						}
+						if (get_token_info(postfix_buffer[ind + 3]) != ";")
+						{
+							AsmFile.close(); return Errors(ERR_POSTFIX_EXPR_END);
+						}
+						ind += 4;
+						tok1 = postfix_buffer[ind];
+						token_text_1 = get_token_info(tok1);
+						continue;
 					}
 					else {
+						AsmFile.close();
 						return Errors(ERR_MULTIPLY_EXPR);
 					}
-
-				} 
+				}
+				AsmFile << name_structure << " ends" << endl << endl;
+				start_new_struct = find(temp_postfix_buffer.begin(), temp_postfix_buffer.end(), postfix_buffer[start_structure]) - temp_postfix_buffer.begin();
+				temp_postfix_buffer.erase(temp_postfix_buffer.begin() + start_new_struct, temp_postfix_buffer.begin() + (ind-start_structure) + start_new_struct + 1);
+				mark_is_structure = false;
 			}
 		}
+		AsmFile << endl << ".DATA" << endl << "\tTEMP_VAR1 dd ?" << endl << "\tTEMP_VAR2 dd ?" << endl << "\tTEMP_VAR real4 ?" << endl;
+		for (lexeme var : identificators.values()) {
+			if (identificators.getValue(var.name) && !identificators.getStruct(var.name)) {
+				if (var.type == "int") {
+					AsmFile << "\t" << var.name << " dd ?" << endl;
+				}
+				else if (var.type == "float") {
+					AsmFile << "\t" << var.name << " real4 ?" << endl;
+				}
+				else if (var.type == "struct") {
+					AsmFile.close();
+					return Errors(ERR_TYPE_STRUCT);
+				}
+				else {
+					AsmFile.close();
+					return Errors(ERR_INVALID_TYPE_VAR);
+				}
+			}
+		}
+		AsmFile << endl << ".CONST" << endl;
+		for (lexeme num : constans.values()) {
+			if (is_float(num.name))
+				AsmFile << "\tconstname" << to_string(constans.getIndex(num.name)) << " real4 " << num.name << endl;
+			else
+				AsmFile << "\tconstname" << to_string(constans.getIndex(num.name)) << " dd " << num.name << endl;
+		}
+		AsmFile << endl << ".CODE" << endl << "\tSTART:" << endl << "\tfinit" << endl;
+		if (temp_postfix_buffer.size() > 2) {
+			for (ind = 2, tok3 = temp_postfix_buffer[ind], token_text_3 = get_token_info(tok3); ind+1 < temp_postfix_buffer.size(); ind++) {
+				if (tok3.NUM_TABLE == OPERATION) {
+					if (ind - 2 < 2) {
+						AsmFile.close(); return Errors(ERR_INVALID_PREFIX);
+					}
+					tok1 = temp_postfix_buffer[ind - 2]; tok2 = temp_postfix_buffer[ind - 1];
+					if (token_text_3 == "+") {
+						if ((temp_err = float_oper(AsmFile, tok1, tok2)).CODE != NO_ERROR) {
+							AsmFile.close(); return temp_err;
+						}
+						AsmFile << "\tfadd" << endl;
+						temp_postfix_buffer.erase(temp_postfix_buffer.begin() + ind - 1, temp_postfix_buffer.begin() + ind + 1);
+						ind -= 2;
+						temp_postfix_buffer[ind].NUM_TABLE = NUMBERS;
+						tok3 = temp_postfix_buffer[ind + 1]; token_text_3 = get_token_info(tok3);
+					}
+					else if (token_text_3 == "-") {
+						if ((temp_err = float_oper(AsmFile, tok1, tok2)).CODE != NO_ERROR) {
+							AsmFile.close(); return temp_err;
+						}
+						AsmFile << "\tfsub" << endl;
+						temp_postfix_buffer.erase(temp_postfix_buffer.begin() + ind - 1, temp_postfix_buffer.begin() + ind + 1);
+						ind -= 2;
+						temp_postfix_buffer[ind].NUM_TABLE = NUMBERS;
+						tok3 = temp_postfix_buffer[ind + 1]; token_text_3 = get_token_info(tok3);
+					}
+					else if (token_text_3 == "|") {
+						if ((temp_err = int_oper(AsmFile, tok1, tok2)).CODE != NO_ERROR) {
+							AsmFile.close(); return temp_err;
+						}
+						AsmFile << "\tmov eax, TEMP_VAR2" << endl << "\tOR TEMP_VAR1, eax" << endl << "\tfild TEMP_VAR1" << endl;
+						temp_postfix_buffer.erase(temp_postfix_buffer.begin() + ind - 1, temp_postfix_buffer.begin() + ind + 1);
+						ind -= 2;
+						temp_postfix_buffer[ind].NUM_TABLE = NUMBERS;
+						tok3 = temp_postfix_buffer[ind + 1]; token_text_3 = get_token_info(tok3);
+					}
+					else if (token_text_3 == "&") {
+						if ((temp_err = int_oper(AsmFile, tok1, tok2)).CODE != NO_ERROR) {
+							AsmFile.close(); {
+								AsmFile.close(); return temp_err;
+							}
+						}
+						AsmFile << "\tmov eax, TEMP_VAR2" << endl << "\tAND TEMP_VAR1, eax" << endl << "\tfild TEMP_VAR1" << endl;
+						temp_postfix_buffer.erase(temp_postfix_buffer.begin() + ind - 1, temp_postfix_buffer.begin() + ind + 1);
+						ind -= 2;
+						temp_postfix_buffer[ind].NUM_TABLE = NUMBERS;
+						tok3 = temp_postfix_buffer[ind + 1]; token_text_3 = get_token_info(tok3);
+					}
+					else if (token_text_3 == ">>") {
+						if ((temp_err = int_oper(AsmFile, tok1, tok2)).CODE != NO_ERROR) { AsmFile.close(); return temp_err; }
+						AsmFile << "\tmov ecx, TEMP_VAR2" << endl << "\tSHR TEMP_VAR1, cl" << endl << "\tfild TEMP_VAR1" << endl;
+						temp_postfix_buffer.erase(temp_postfix_buffer.begin() + ind - 1, temp_postfix_buffer.begin() + ind + 1);
+						ind -= 2;
+						temp_postfix_buffer[ind].NUM_TABLE = NUMBERS;
+						tok3 = temp_postfix_buffer[ind + 1]; token_text_3 = get_token_info(tok3);
+					}
+					else if (token_text_3 == "<<") {
+						if ((temp_err = int_oper(AsmFile, tok1, tok2)).CODE != NO_ERROR) {
+							AsmFile.close(); return temp_err;
+						}
+						AsmFile << "\tmov ecx, TEMP_VAR2" << endl << "\tSHL TEMP_VAR1, cl" << endl << "\tfild TEMP_VAR1" << endl;
+						temp_postfix_buffer.erase(temp_postfix_buffer.begin() + ind - 1, temp_postfix_buffer.begin() + ind + 1);
+						ind -= 2;
+						temp_postfix_buffer[ind].NUM_TABLE = NUMBERS;
+						tok3 = temp_postfix_buffer[ind + 1]; token_text_3 = get_token_info(tok3);
+					}
+					else if (token_text_3 == "<") {
+						if ((temp_err = float_oper(AsmFile, tok1, tok2)).CODE != NO_ERROR) {
+							AsmFile.close(); return temp_err;
+						}
+						AsmFile << "\tfcomip st(0), st(1)" << endl << "\tja greater" << endl << "\tjb less" << endl << "\tgreater:" << endl << "\tfild 0" << endl <<
+							"\tjmp mark_block_end" << endl << "\tless:" << endl << "\tfild 1" << endl << "\tmark_block_end:" << endl;
+						temp_postfix_buffer.erase(temp_postfix_buffer.begin() + ind - 1, temp_postfix_buffer.begin() + ind + 1);
+						ind -= 2;
+						temp_postfix_buffer[ind].NUM_TABLE = NUMBERS;
+						tok3 = temp_postfix_buffer[ind + 1]; token_text_3 = get_token_info(tok3);
+					}
+					else if (token_text_3 == ">") {
+						if ((temp_err = float_oper(AsmFile, tok1, tok2)).CODE != NO_ERROR) {
+							AsmFile.close();
+							return temp_err;
+						}
+						AsmFile << "\tfcomip st(0), st(1)" << endl << "\tja greater" << endl << "\tjb less" << endl << "\tgreater:" << endl << "\tfild 1" << endl <<
+							"\tjmp mark_block_end" << endl << "\tless:" << endl << "\tfild 0" << endl << "\tmark_block_end:" << endl;
+						temp_postfix_buffer.erase(temp_postfix_buffer.begin() + ind - 1, temp_postfix_buffer.begin() + ind + 1);
+						ind -= 2;
+						temp_postfix_buffer[ind].NUM_TABLE = NUMBERS;
+						tok3 = temp_postfix_buffer[ind + 1]; token_text_3 = get_token_info(tok3);
+					}
+					else if (token_text_3 == "=") {
+						if ((temp_err = float_var_asm(name_structure, tok2)).CODE != NO_ERROR) return temp_err;
+						AsmFile << name_structure;
+						if (tok1.NUM_TABLE != IDENTIFICATORS) {
+							AsmFile.close();
+							return Errors(ERR_INVALID_PREFIX);
+						}
+						temp_lex = identificators.getElemIndex(tok1.INDEX);
+						if (temp_lex.type == "float") {
+							AsmFile << "\tfstp " << temp_lex.name << endl;
+						}
+						else if (temp_lex.type == "int") {
+							AsmFile << "\tfistp " << temp_lex.name << endl;
+						}
+						else if (temp_lex.type == "struct") {
+							AsmFile.close();
+							return Errors(ERR_TYPE_STRUCT);
+						}
+						else {
+							AsmFile.close();
+							return Errors(ERR_PERFORMING_OPERATION_UNINITIALIZED_VAR);
+						}
+						temp_postfix_buffer.erase(temp_postfix_buffer.begin() + ind - 2, temp_postfix_buffer.begin() + ind + 1);
+						ind -= 2;
+						tok3 = temp_postfix_buffer[ind + 1]; token_text_3 = get_token_info(tok3);
+					}
+				}
+				else {
+					tok3 = temp_postfix_buffer[ind + 1]; token_text_3 = get_token_info(tok3);
+				}
+			}
+			AsmFile << "\tCALL ExitProcess@4" << endl;
+			AsmFile << "\tEND START" << endl;
+			AsmFile.close();
+			return Errors(NO_ERROR);
+		}
+		else {
+			AsmFile.close();
+			return Errors(ERR_LACK_MAIN);
+		}
+
+	}
+
+	Errors float_oper(ofstream & AsmFile, Token tok1, Token tok2) {
+		lexeme temp_lex;
+		string token_text_1, token_text_2;
+		Errors temp;
+		if ((tok1.NUM_TABLE == IDENTIFICATORS || tok1.NUM_TABLE == CONSTANS) && (tok2.NUM_TABLE == IDENTIFICATORS || tok2.NUM_TABLE == CONSTANS)) {
+			if ((temp = float_var_asm(token_text_1, tok1)).CODE != NO_ERROR) return temp;
+			AsmFile << token_text_1;
+			if ((temp = float_var_asm(token_text_1, tok2)).CODE != NO_ERROR) return temp;
+			AsmFile << token_text_1;
+		}
+		else if (tok1.NUM_TABLE == NUMBERS && (tok2.NUM_TABLE == IDENTIFICATORS || tok2.NUM_TABLE == CONSTANS)) {
+			if ((temp = float_var_asm(token_text_1, tok2)).CODE != NO_ERROR) return temp;
+			AsmFile << token_text_1;
+		}
+		else if ((tok1.NUM_TABLE == IDENTIFICATORS || tok1.NUM_TABLE == CONSTANS) && tok2.NUM_TABLE == NUMBERS) {
+			AsmFile << "\tfstp TEMP_VAR" << endl;
+			if ((temp = float_var_asm(token_text_1, tok1)).CODE != NO_ERROR) return temp;
+			AsmFile << token_text_1;
+			AsmFile << "\tfld TEMP_VAR" << endl;
+		}
+		return Errors(NO_ERROR);
+	}
+	Errors int_oper(ofstream& AsmFile, Token tok1, Token tok2) {
+		lexeme temp_lex;
+		string token_text_1, token_text_2;
+		Errors temp;
+		if ((tok1.NUM_TABLE == IDENTIFICATORS || tok1.NUM_TABLE == CONSTANS) && (tok2.NUM_TABLE == IDENTIFICATORS || tok2.NUM_TABLE == CONSTANS)) {
+			if ((temp = int_var_asm(token_text_1, tok1, "TEMP_VAR1")).CODE != NO_ERROR) return temp;
+			AsmFile << token_text_1;
+			if ((temp = int_var_asm(token_text_1, tok2, "TEMP_VAR2")).CODE != NO_ERROR) return temp;
+			AsmFile << token_text_1;
+		}
+		else if (tok1.NUM_TABLE == NUMBERS && (tok2.NUM_TABLE == IDENTIFICATORS || tok2.NUM_TABLE == CONSTANS)) {
+			AsmFile << "\tfistp TEMP_VAR1" << endl;
+			if ((temp = int_var_asm(token_text_1, tok2, "TEMP_VAR2")).CODE != NO_ERROR) return temp;
+			AsmFile << token_text_1;
+		}
+		else if ((tok1.NUM_TABLE == IDENTIFICATORS || tok1.NUM_TABLE == CONSTANS) && tok2.NUM_TABLE == NUMBERS) {
+			AsmFile << "\tfistp TEMP_VAR2" << endl;
+			if ((temp = int_var_asm(token_text_1, tok1, "TEMP_VAR1")).CODE != NO_ERROR) return temp;
+			AsmFile << token_text_1;
+		}
+		else if (tok1.NUM_TABLE == NUMBERS && tok2.NUM_TABLE == NUMBERS) {
+			AsmFile << "\tfistp TEMP_VAR2" << endl;
+			AsmFile << "\tfistp TEMP_VAR1" << endl;
+		}
+		return Errors(NO_ERROR);
+	}
+	Errors float_var_asm(string& str, Token tok1) {
+		lexeme temp_lex;
+		stringstream ss;
+		if (tok1.NUM_TABLE == IDENTIFICATORS) {
+			temp_lex = identificators.getElemIndex(tok1.INDEX);
+			if (identificators.getValueIndex(tok1.INDEX)) {
+				temp_lex.value = true;
+			}
+			if (temp_lex.value) {
+				if (temp_lex.type == "int") {
+					ss << "\tfild " << temp_lex.name << endl;
+				}
+				else if (temp_lex.type == "float") {
+					ss << "\tfld " << temp_lex.name << endl;
+				}
+				else if (temp_lex.type == "struct")
+					return Errors(ERR_TYPE_STRUCT);
+				else return Errors(ERR_PERFORMING_OPERATION_UNINITIALIZED_VAR);
+			}
+			else
+				return Errors(ERR_PERFORMING_OPERATION_UNINITIALIZED_VAR);
+		}
+		else if (tok1.NUM_TABLE == CONSTANS) {
+			string temp = get_token_info(tok1);
+			if (is_float(temp)) {
+				ss << "\tfld " << "constname" << to_string(tok1.INDEX) << endl;
+			}
+			else {
+				ss << "\tfild " << "constname" << to_string(tok1.INDEX) << endl;
+			}
+		}
+		str = ss.str();
+		return Errors(NO_ERROR);
+	}
+	Errors int_var_asm(string& str, Token tok1, string to) {
+		lexeme temp_lex;
+		stringstream ss;
+		if (tok1.NUM_TABLE == IDENTIFICATORS) {
+			temp_lex = identificators.getElemIndex(tok1.INDEX);
+			if (identificators.getValueIndex(tok1.INDEX)) {
+				if (temp_lex.type == "int") {
+					ss << "\tfild " << temp_lex.name << endl << "\tfistp "<< to << endl;
+				}
+				else if (temp_lex.type == "float") {
+					QErrors.push(Errors(WARNING_FLOAT_TO_INT_PERFORMING));
+					ss << "\tfld " << temp_lex.name << endl << "\tfistp " << to << endl;
+				}
+				else if (temp_lex.type == "struct")
+					return Errors(ERR_TYPE_STRUCT);
+				else return Errors(ERR_PERFORMING_OPERATION_UNINITIALIZED_VAR);
+			}
+			else
+				return Errors(ERR_PERFORMING_OPERATION_UNINITIALIZED_VAR);
+		}
+		else if (tok1.NUM_TABLE == CONSTANS) {
+			string temp = get_token_info(tok1);
+			if (is_float(temp)) {
+				QErrors.push(Errors(WARNING_FLOAT_TO_INT_PERFORMING));
+				ss << "\tfld " << "constname" << to_string(tok1.INDEX) << endl << "\tfistp " << to << endl;
+			}
+			else {
+				ss << "\tfild " << "constname" << to_string(tok1.INDEX) << endl << "\tfistp " << to << endl;
+			}
+		}
+		str = ss.str();
+		return Errors(NO_ERROR);
 	}
 
 public:
@@ -750,6 +1075,12 @@ public:
 				postfix_print(NAMEFILEPOSTFIX);
 			}
 			else {
+				QErrors.push(err);
+			}
+		}
+		if (!flag_err) {
+			Errors err = GenerateCodeAssembler();
+			if (err.CODE != NO_ERROR) {
 				QErrors.push(err);
 			}
 		}

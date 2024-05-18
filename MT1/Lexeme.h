@@ -9,6 +9,7 @@ struct lexeme
 	string type;
 	bool value; // Инициализирован ли индентификатор
 	bool valid;
+	bool in_struct = false;
 	//Конструкторы
 	lexeme() : name(""), type(""), valid(false), value(false) {}
 	lexeme(string ind_name) {

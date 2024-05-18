@@ -1,8 +1,2 @@
-56	const	0
-100	const	0
-432	const	0
-32	const	0
-98.23	const	0
-50	const	0
-43	const	0
-42	const	0
+2	const	0
+3	const	0

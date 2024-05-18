@@ -1,0 +1,1 @@
+Error: In this version of the program there is no processing of the structure type in this constructor!

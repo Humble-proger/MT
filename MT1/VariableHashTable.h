@@ -95,11 +95,27 @@ public:
         cerr << "Element with key '" << key << "' not found." << endl;
         return false;
     }
-    lexeme getElement(const string& key) {
+    bool SetStruct(const string& key, bool newS) {
         int hash = calculateHash(key);
         while (hashTable.find(hash) != hashTable.end() && hashTable[hash].valid) {
             if (hashTable[hash].name == key) {
-                return hashTable[hash];
+                hashTable[hash].in_struct = newS;
+                return true;
+            }
+            hash = rehash(hash);
+        }
+        cerr << "Element with key '" << key << "' not found." << endl;
+        return false;
+    }
+    lexeme getElement(const string& key) {
+        int hash = calculateHash(key);
+        lexeme temp;
+        while (hashTable.find(hash) != hashTable.end() && hashTable[hash].valid) {
+            if (hashTable[hash].name == key) {
+                temp = hashTable[hash];
+                if (hashTable[hash].value)
+                    temp.value = true;
+                return temp;
             }
             hash = rehash(hash);
         }
@@ -119,8 +135,12 @@ public:
     }
 
     lexeme getElemIndex(int index) {
+        lexeme temp;
         if (index >= 0 && index < TABLE_SIZE) {
-            return hashTable[index];
+            temp = hashTable[index];
+            if (hashTable[index].value)
+                temp.value = true;
+            return temp;
         }
         else {
             return lexeme();
@@ -146,5 +166,62 @@ public:
         }
         return true;
     }
+    vector<lexeme> values() {
+        vector<lexeme> result(hashTable.size());
+        int i = 0;
+        for (auto& pair : hashTable) {
+            result[i] = pair.second;
+            i++;
+        }
+        return result;
+    }
+    vector<int> keys() {
+        vector<int> result(hashTable.size());
+        int i = 0;
+        for (auto& pair : hashTable) {
+            result[i] = pair.first;
+            i++;
+        }
+        return result;
+    }
+    bool getValue(const string& key) {
+        int hash = calculateHash(key);
+        while (hashTable.find(hash) != hashTable.end() && hashTable[hash].valid) {
+            if (hashTable[hash].name == key) {
+                return hashTable[hash].value;
+            }
+            hash = rehash(hash);
+        }
+        cerr << "Element with key '" << key << "' not found." << endl;
+        return false;
+    }
+    bool getValueIndex(int index) {
+        if (index >= 0 && index < TABLE_SIZE) {
+            return hashTable[index].value;
+        }
+        else {
+            return false;
+        }
+    }
+    bool getStruct(const string& key) {
+        int hash = calculateHash(key);
+        while (hashTable.find(hash) != hashTable.end() && hashTable[hash].valid) {
+            if (hashTable[hash].name == key) {
+                return hashTable[hash].in_struct;
+            }
+            hash = rehash(hash);
+        }
+        cerr << "Element with key '" << key << "' not found." << endl;
+        return false;
+    }
+    bool getStructIndex(int index) {
+        if (index >= 0 && index < TABLE_SIZE) {
+            return hashTable[index].in_struct;
+        }
+        else {
+            return false;
+        }
+    }
+
 };
 #endif

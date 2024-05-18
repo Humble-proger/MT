@@ -1,7 +1,2 @@
-People		0
-age	int	0
-strench	float	0
-a	float	0
-val	float	0
+lambda	struct	1
 main		0
-b	int	0

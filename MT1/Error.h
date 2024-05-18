@@ -44,7 +44,12 @@ enum Code_Errors {
 	ERR_BRACKET,
 	ERR_INVALID_PREFIX,
 	ERR_TYPE_STRUCT,
-	ERR_MULTIPLY_EXPR
+	ERR_MULTIPLY_EXPR,
+	ERR_STRUCT_NO_EXPR,
+	ERR_POSTFIX_EXPR_END,
+	WARNING_FLOAT_TO_INT,
+	ERR_LACK_MAIN,
+	WARNING_FLOAT_TO_INT_PERFORMING
 };
 
 class Errors {
@@ -124,11 +129,21 @@ public:
 			}
 			return "Error: Parse stack is not empty!" + string("\nElements of the parser stack: ") + ss.str();
 		case ERR_INVALID_PREFIX:
-			return "Error: The prefix array is not built correctly!";
+			return "Error: The postfix array is not built correctly!";
 		case ERR_TYPE_STRUCT:
 			return "Error: In this version of the program there is no processing of the structure type in this constructor!";
 		case ERR_MULTIPLY_EXPR:
 			return "Error: In this version of the program, expressions cannot be used in the structure constructor when declaring variables;";
+		case ERR_STRUCT_NO_EXPR:
+			return "Error: In this version of the program, expressions are not allowed when declaring variables!";
+		case ERR_POSTFIX_EXPR_END:
+			return "Error: The end of the expression in the postfix notation is not correct.";
+		case WARNING_FLOAT_TO_INT:
+			return "Warning: Assigning a real number to an integer.";
+		case ERR_LACK_MAIN:
+			return "Error: Lack of main structure.";
+		case WARNING_FLOAT_TO_INT_PERFORMING:
+			return "Warning: Using an operation that is performed between integers. In this case, real ones are transmitted.";
 		default:
 			break;
 		}

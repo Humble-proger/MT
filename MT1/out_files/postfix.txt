@@ -1,1 +1,1 @@
-People { strench ; age 100 32 - 50 - = ; val 98.23 32 - 43 >> = ; } main { a ; b 56 42 + = ; a b 432 - = ; } People { age 100 32 - 50 - = ; val 98.23 32 - 43 >> = ; } 
+main { lambda ; lambda 2 3 + = ; } 
